@@ -20,14 +20,19 @@ app.get("/", (req, res) => {
     res.send("Assignment 3 Backend is running!");
 });
 
-// Initialize Data Source and start server
-AppDataSource.initialize()
-    .then(() => {
-        console.log("Data Source has been initialized!");
-        app.listen(PORT, () => {
-            console.log(`Server is running on http://localhost:${PORT}`);
+// Fix: Wrap initialization so it does NOT auto-start during test suites
+if (process.env.NODE_ENV !== "test") {
+    AppDataSource.initialize()
+        .then(() => {
+            console.log("Data Source has been initialized!");
+            app.listen(PORT, () => {
+                console.log(`Server is running on http://localhost:${PORT}`);
+            });
+        })
+        .catch((err) => {
+            console.error("Error during Data Source initialization:", err);
         });
-    })
-    .catch((err) => {
-        console.error("Error during Data Source initialization:", err);
-    });
+}
+
+// Fix: Export the raw app instance for supertest
+module.exports = app;
