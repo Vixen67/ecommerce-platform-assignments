@@ -1,9 +1,9 @@
-import request from "supertest";
-import { AppDataSource } from "../data-source.js"; // Adjust path to your TypeORM source
-import app from "../app.js"; // Adjust path to your express app export
+const request = require("supertest");
+const { AppDataSource } = require("../data-source");
+const app = require("../app");
 
 beforeAll(async () => {
-    // Ensure database connection is active before running tests
+    // Requirements: Initialize database connection directly for testing environment
     if (!AppDataSource.isInitialized) {
         await AppDataSource.initialize();
     }
@@ -11,14 +11,14 @@ beforeAll(async () => {
 
 afterAll(async () => {
     // Requirements: Clean up test data after execution
-    const repo = AppDataSource.getRepository("users_assignment3");
-    await repo.delete({ email: "testintegration@example.com" });
-    
-    // Close the connection clean
-    await AppDataSource.destroy();
+    if (AppDataSource.isInitialized) {
+        const repo = AppDataSource.getRepository("User"); // Update string to match your Entity class name exactly
+        await repo.delete({ email: "testintegration@example.com" });
+        await AppDataSource.destroy();
+    }
 });
 
-describe("POST /users Integration Test", () => {
+describe("POST /api/users Integration Test", () => {
     it("should successfully create and store a user in PostgreSQL", async () => {
         const testUser = {
             name: "Test Integration User",
@@ -26,13 +26,16 @@ describe("POST /users Integration Test", () => {
             password: "SecurePassword123"
         };
 
+        // Note: Your app routes are prefixed with '/api' in app.js
         const response = await request(app)
-            .post("/users") // Match your registration endpoint path
+            .post("/api/users") 
             .send(testUser);
 
         // Assertions
-        expect(response.status).toBe(201); // Or 200 depending on your controller status code
-        expect(response.body).toHaveProperty("id");
-        expect(response.body.email).toBe(testUser.email);
+        // Assertions
+        expect(response.status).toBe(201); 
+        expect(response.body.user).toHaveProperty("id"); // Fixed: pointing inside 'user'
+        expect(response.body.user.email).toBe(testUser.email); // Fixed: pointing inside 'user'
+
     });
 });
