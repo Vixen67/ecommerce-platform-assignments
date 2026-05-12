@@ -28,7 +28,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v4
         with:
-          node-node-version: 18
+          node-version: 18  # Fixed typo: changed from node-node-version to node-version
 
       - name: Install dependencies
         run: |
@@ -43,6 +43,7 @@ jobs:
           DB_PASSWORD: 1234
           DB_NAME: assignment2_test_db
           JWT_SECRET: test_secret_key
+          NODE_ENV: test    # Added to match your app.js conditional check
         run: |
           cd backend
           npm test
